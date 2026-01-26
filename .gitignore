@@ -1,0 +1,14 @@
+
+/build/
+build/
+/deploy/
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.lib
+*.gcda
+*.gcno
+*.tar.gz
+.DS_Store
