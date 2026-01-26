@@ -1,0 +1,81 @@
+name: C++ CI Build & Test
+
+on:
+  push:
+    branches: [CICD_Agent]
+  pull_request:
+    branches: [CICD_Agent]
+
+jobs:
+  build-test:
+    name: Build and Test (${{ matrix.os }} / ${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        compiler: [gcc, clang]
+        include:
+          - os: windows-latest
+            compiler: msvc
+      fail-fast: false
+
+    env:
+      BUILD_TYPE: Release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup C++ Compiler
+        if: matrix.compiler == 'gcc'
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+        continue-on-error: true
+
+      - name: Setup Clang
+        if: matrix.compiler == 'clang'
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+        continue-on-error: true
+
+      - name: Setup MSVC
+        if: matrix.compiler == 'msvc'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Install Ninja (optional)
+        uses: seanmiddleditch/gha-setup-ninja@v4
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -G Ninja
+
+      - name: Build
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Run tests
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Clang-Tidy (Code Quality)
+        if: matrix.compiler == 'clang'
+        run: |
+          cmake --build build --target clang-tidy || true
+
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.os }}-${{ matrix.compiler }}
+          path: build/**/*.log
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.compiler }}
+          path: build/Testing/Temporary/LastTest.log
