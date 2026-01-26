@@ -34,6 +34,7 @@ target_link_libraries(sample_tests GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(sample_tests)
 
+
 # Packaging
 include(CPack)
 set(CPACK_PACKAGE_NAME "sample-cpp-gha")
