@@ -1,0 +1,29 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, CICD_Agent ]
+  pull_request:
+    branches: [ CICD_Agent ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build .
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
