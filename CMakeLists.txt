@@ -40,3 +40,7 @@ set(CPACK_PACKAGE_NAME "sample-cpp-gha")
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+# Added by unified agent
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
